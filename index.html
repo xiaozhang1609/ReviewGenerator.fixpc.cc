@@ -3,24 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>祝福语生成器</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        textarea { width: 100%; height: 200px; margin-bottom: 10px; }
-        button { margin-top: 10px; }
+    <title>评价生成器</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <script src="https://unpkg.com/unlazy@0.11.3/dist/unlazy.with-hashing.iife.js" defer init></script>
+    <script type="text/javascript">
+        window.tailwind.config = {
+            darkMode: ['class'],
+            theme: {
+                extend: {
+                    colors: {
+                        border: 'hsl(var(--border))',
+                        input: 'hsl(var(--input))',
+                        ring: 'hsl(var(--ring))',
+                        background: 'hsl(var(--background))',
+                        foreground: 'hsl(var(--foreground))',
+                        primary: {
+                            DEFAULT: 'hsl(var(--primary))',
+                            foreground: 'hsl(var(--primary-foreground))'
+                        },
+                        secondary: {
+                            DEFAULT: 'hsl(var(--secondary))',
+                            foreground: 'hsl(var(--secondary-foreground))'
+                        },
+                        accent: {
+                            DEFAULT: 'hsl(var(--accent))',
+                            foreground: 'hsl(var(--accent-foreground))'
+                        },
+                        card: {
+                            DEFAULT: 'hsl(var(--card))',
+                            foreground: 'hsl(var(--card-foreground))'
+                        },
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            :root {
+                --background: 0 0% 100%;
+                --foreground: 240 10% 3.9%;
+                --card: 0 0% 100%;
+                --card-foreground: 240 10% 3.9%;
+                --popover: 0 0% 100%;
+                --popover-foreground: 240 10% 3.9%;
+                --primary: 240 5.9% 10%;
+                --primary-foreground: 0 0% 98%;
+                --secondary: 240 4.8% 95.9%;
+                --secondary-foreground: 240 5.9% 10%;
+                --muted: 240 4.8% 95.9%;
+                --muted-foreground: 240 3.8% 46.1%;
+                --accent: 240 4.8% 95.9%;
+                --accent-foreground: 240 5.9% 10%;
+                --destructive: 0 84.2% 60.2%;
+                --destructive-foreground: 0 0% 98%;
+                --border: 240 5.9% 90%;
+                --input: 240 5.9% 90%;
+                --ring: 240 5.9% 10%;
+                --radius: 0.5rem;
+            }
+            .dark {
+                --background: 240 10% 3.9%;
+                --foreground: 0 0% 98%;
+                --card: 240 10% 3.9%;
+                --card-foreground: 0 0% 98%;
+                --popover: 240 10% 3.9%;
+                --popover-foreground: 0 0% 98%;
+                --primary: 0 0% 98%;
+                --primary-foreground: 240 5.9% 10%;
+                --secondary: 240 3.7% 15.9%;
+                --secondary-foreground: 0 0% 98%;
+                --muted: 240 3.7% 15.9%;
+                --muted-foreground: 240 5% 64.9%;
+                --accent: 240 3.7% 15.9%;
+                --accent-foreground: 0 0% 98%;
+                --destructive: 0 62.8% 30.6%;
+                --destructive-foreground: 0 0% 98%;
+                --border: 240 3.7% 15.9%;
+                --input: 240 3.7% 15.9%;
+                --ring: 240 4.9% 83.9%;
+            }
+        }
     </style>
 </head>
-<body>
-    <h1>祝福语生成器</h1>
-    <label for="initialCount">初始客户计数：</label>
-    <input type="number" id="initialCount" value="1577" min="1">
-    <button onclick="generateMessages()">生成祝福语</button>
-    <button onclick="copyToClipboard()">一键复制</button>
-    
-    <textarea id="output" readonly></textarea>
-
+<body class="bg-background text-foreground flex items-center justify-center min-h-screen">
+    <div class="p-6 bg-card text-card-foreground rounded-lg shadow-lg w-full max-w-3xl">
+        <h1 class="text-2xl font-bold mb-4 text-center">评价生成器</h1>
+        <div class="form-group mb-4">
+            <label for="initialCount" class="block font-semibold mb-2">初始客户计数：</label>
+            <input type="number" id="initialCount" value="1577" min="1" class="w-full p-2 border border-border rounded-md bg-input text-foreground">
+        </div>
+        <div class="flex space-x-4 mb-4 justify-center">
+            <button onclick="generateMessages()" class="bg-primary text-primary-foreground hover:bg-primary/80 p-2 rounded-md">生成评价</button>
+            <button onclick="copyToClipboard()" class="bg-secondary text-secondary-foreground hover:bg-secondary/80 p-2 rounded-md">一键复制</button>
+        </div>
+        <div class="alert bg-accent text-accent-foreground p-4 rounded-md mb-4 hidden" id="alertBox">评价已复制到剪贴板！</div>
+        <textarea id="output" readonly class="w-full h-64 p-2 border border-border rounded-md bg-input text-foreground resize-vertical"></textarea>
+    </div>
     <script>
         const idioms = [
+            // 在此处补全成语列表
             "一帆风顺", "二龙腾飞", "三羊开泰", "四季平安", "五福临门",
             "六六大顺", "七星高照", "八方来财", "九九同心", "十全十美",
             "万事如意", "吉祥如意", "年年有余", "吉星高照", "财运亨通",
@@ -61,9 +143,9 @@
 
             for (let i = 0; i < 200; i++) {
                 const selectedIdioms = getRandomIdioms(idioms, 10);
-                const part1 = "💐非常感谢您购买本店的商品💐小章祝您：";
+                const part1 = "💬 感谢您对我们服务的支持！以下是我们的评价：";
                 const part2 = selectedIdioms.join("😊") + "😊";
-                const part3 = `💐您是本店的第${customerCount}位客户💐期待您的下次光临💐`;
+                const part3 = `💬 您是我们的第${customerCount}位客户。期待您再次光临！💬`;
 
                 outputText += `${part1}${part2}\n${part3}\n\n`;
                 customerCount++;
@@ -86,7 +168,10 @@
             const outputTextArea = document.getElementById('output');
             outputTextArea.select();
             document.execCommand('copy');
-            alert('祝福语已复制到剪贴板！');
+            document.getElementById('alertBox').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('alertBox').classList.add('hidden');
+            }, 2000);
         }
     </script>
 </body>
